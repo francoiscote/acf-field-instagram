@@ -170,7 +170,7 @@ class acf_field_instagram extends acf_field {
 
 						$html = $response['html'];
 						// Save Transient
-						set_transient( $transient_name, $response['html'], 300 );
+						set_transient( $html_transient, $response['html'], 300 );
 
 					} else {
 						throw new \Exception($response['meta']['error_type'] . ':' . $response['meta']['code'] . ':' . $response['meta']['error_message']);
