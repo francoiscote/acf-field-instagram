@@ -144,9 +144,13 @@ class acf_field_instagram extends acf_field {
 		*  Create a simple text input
 		*/
 
+		// echo '<pre>';
+		// print_r( ($field) );
+		// echo '</pre>';
 		?>
 
-		<input type="text" name="<?php echo esc_attr($field['name']) ?>" value="<?php echo esc_attr($field['value']['media_shortcode']) ?>" />
+
+		<input type="text" name="<?php echo esc_attr($field['name']) ?>" value="<?php echo esc_attr($field['value']['shortcode']) ?>" />
 		<?php
 
 
@@ -154,22 +158,22 @@ class acf_field_instagram extends acf_field {
 			$html = '';
 
 			// Check Transient
-			$html_transient = 'instagram-html-'.$media->id;
+			$html_transient = 'instagram-html-'.$media['id'];
 			if ( false === ( $media_html = get_transient( $html_transient ) ) ) {
 
 				require_once(dirname(__FILE__) . '/Instagram.php');
 
 					$instagram = new MetzWeb\Instagram\Instagram($field['client_id']);
-					$response = $instagram->getoEmbed($media->link);
+					$response = json_decode(json_encode($instagram->getoEmbed($media['link'])), true);
 
 					if ( $response ) {
 
-						$html = $response->html;
+						$html = $response['html'];
 						// Save Transient
-						set_transient( $transient_name, $response->html, 300 );
+						set_transient( $transient_name, $response['html'], 300 );
 
 					} else {
-						throw new \Exception($response->meta->error_type . ':' . $response->meta->code . ':' . $response->meta->error_message);
+						throw new \Exception($response['meta']['error_type'] . ':' . $response['meta']['code'] . ':' . $response['meta']['error_message']);
 					}
 
 			} else {
@@ -359,15 +363,11 @@ class acf_field_instagram extends acf_field {
 	*  @return	$value
 	*/
 
-	/*
 
 	function load_value( $value, $post_id, $field ) {
-
+		$value['media'] = json_decode(base64_decode($value['raw_json']), true);
 		return $value;
-
 	}
-
-	*/
 
 
 	/*
@@ -387,11 +387,9 @@ class acf_field_instagram extends acf_field {
 
 
 	function update_value( $value, $post_id, $field ) {
-
 		$data = array(
-			'media_shortcode' => $value,
-			'raw_json' => '',
-			'media' => ''
+			'shortcode' => $value,
+			'raw_json' => ''
 		);
 
 		// Check Transient
@@ -409,23 +407,22 @@ class acf_field_instagram extends acf_field {
 				if ( $response->meta->code == 200 ) {
 
 					// Save Media Object
-					$data['media'] = $response->data;
+					$json = base64_encode(json_encode($response->data));
+					$data['raw_json'] = $json;
+
 					// Save Transient
-					set_transient( $transient_name, $response->data, $field['cache_lifetime'] );
+					set_transient( $transient_name, $json, $field['cache_lifetime'] );
 
 				} else {
-					throw new \Exception($response->meta->error_type . ':' . $response->meta->code . ':' . $response->meta->error_message);
+					throw new \Exception($respons->meta->error_type . ':' . $respons->meta->code . ':' . $respons->meta->error_message);
 				}
 			}
 
 		} else {
 
-			$data['media'] = $media;
+			$data['raw_json'] = $media;
 
 		}
-
-		// Save Raw JSON version
-		$data['raw_json'] = json_encode($data['media']);
 
 		return $data;
 	}
@@ -461,7 +458,7 @@ class acf_field_instagram extends acf_field {
 		return $value;
 	}
 
- 	*/
+	*/
 
 	/*
 	*  validate_value()
