@@ -27,5 +27,9 @@ This ACF field type is compatible with:
 
 == Changelog ==
 
+= 1.0.1 =
+* merge PR that fixes Instagram's oembed route
+* fix typo in Exception throw.
+
 = 1.0.0 =
 * Initial Release.
