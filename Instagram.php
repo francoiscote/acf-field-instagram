@@ -20,6 +20,7 @@ class Instagram {
    * The API base URL
    */
   const API_URL = 'https://api.instagram.com/v1/';
+  const API_PUBLIC_URL = 'https://api.instagram.com/public/';
 
   /**
    * The API OAuth URL
@@ -392,7 +393,7 @@ class Instagram {
    * @return mixed
    */
   public function getoEmbed($url) {
-    return $this->_makeCall( '/oembed?url='.urlencode($url) );
+    return $this->_makeCall( '/oembed', 'public', ['url' => $url] );
   }
 
   /**
@@ -453,7 +454,7 @@ class Instagram {
    * @return mixed
    */
   protected function _makeCall($function, $auth = false, $params = null, $method = 'GET') {
-    if (false === $auth) {
+    if (false === $auth || 'public' === $auth) {
       // if the call doesn't requires authentication
       $authMethod = '?client_id=' . $this->getApiKey();
     } else {
@@ -471,7 +472,8 @@ class Instagram {
       $paramString = null;
     }
 
-    $apiCall = self::API_URL . $function . $authMethod . (('GET' === $method) ? $paramString : null);
+    $apiUrl = $auth == 'public' ? self::API_PUBLIC_URL : self::API_URL;
+    $apiCall = $apiUrl . $function . $authMethod . (('GET' === $method) ? $paramString : null);
 
     // signed header of POST/DELETE requests
     $headerData = array('Accept: application/json');
@@ -495,6 +497,7 @@ class Instagram {
     }
 
     $jsonData = curl_exec($ch);
+
     if (false === $jsonData) {
       throw new \Exception("Error: _makeCall() - cURL error: " . curl_error($ch));
     }
